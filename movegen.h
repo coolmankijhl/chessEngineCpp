@@ -1,11 +1,9 @@
-#include <iostream>
-
-#include "board.h"
+#include "pieceData.h"
 
 #ifndef movegen_h
 #define movegen_h
 
-enum Color { WHITE, BLACK };
+#include <iostream>
 
 void pawnMoves(Index square, Color color);
 

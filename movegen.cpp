@@ -3,6 +3,9 @@
 
 #include "movegen.h"
 
+#include "board.h"
+#include "pieceData.h"
+
 void pawnMoves(Index square, Color color) {
     Bitboard temp = 0ULL;
 
@@ -39,6 +42,4 @@ void pawnMoves(Index square, Color color) {
             setBit(temp, square + 9);
         }
     }
-
-    printBoard(temp);
 }

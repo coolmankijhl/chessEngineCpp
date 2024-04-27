@@ -1,5 +1,7 @@
 #include "board.h"
 
+#include "pieceData.h"
+
 // clang-format off
 
 // Map for converting user input to index
@@ -17,33 +19,96 @@ std::map<std::string, Index> stringToIndexMap = {
 // clang-format on
 
 // Prints Chess Board
-void printBoard(Bitboard bitboard) {
-    printf("\n");
-    // print colors turn?
+#include <iostream>
+
+#include "board.h"
+
+// Function to print the chess board with pieces
+void printBoard(Bitboard* bitboards) {
+    char pieces[8][8];  // Array to store ASCII representations of pieces
+
+    // Initialize the pieces array
     for (int row = 0; row < 8; row++) {
         for (int col = 0; col < 8; col++) {
-            if (col == 0) printf("  %d  ", 8 - row);
-
             int square = row * 8 + col;
-            printf(" %d", getBit(bitboard, (row * 8) + col) ? 1 : 0);
+            pieces[row][col] = '.';  // Default empty square
+
+            // Check each bitboard to determine the piece at the current square
+            for (int i = 0; i < 18; ++i) {
+                if (getBit(bitboards[i], square)) {
+                    switch (i) {
+                        case WHITE_PAWNS:
+                            pieces[row][col] = 'P';
+                            break;
+                        case WHITE_KNIGHTS:
+                            pieces[row][col] = 'N';
+                            break;
+                        case WHITE_BISHOPS:
+                            pieces[row][col] = 'B';
+                            break;
+                        case WHITE_ROOKS:
+                            pieces[row][col] = 'R';
+                            break;
+                        case WHITE_QUEENS:
+                            pieces[row][col] = 'Q';
+                            break;
+                        case WHITE_KING:
+                            pieces[row][col] = 'K';
+                            break;
+                        case BLACK_PAWNS:
+                            pieces[row][col] = 'p';
+                            break;
+                        case BLACK_KNIGHTS:
+                            pieces[row][col] = 'n';
+                            break;
+                        case BLACK_BISHOPS:
+                            pieces[row][col] = 'b';
+                            break;
+                        case BLACK_ROOKS:
+                            pieces[row][col] = 'r';
+                            break;
+                        case BLACK_QUEENS:
+                            pieces[row][col] = 'q';
+                            break;
+                        case BLACK_KING:
+                            pieces[row][col] = 'k';
+                            break;
+                        case EMPTY_SPACES:
+                            pieces[row][col] = '.';
+                            break;
+                        default:
+                            break;  // Ignore other bitboards
+                    }
+                    break;  // Exit loop once a piece is found
+                }
+            }
         }
-        printf("\n");
     }
-    printf("\n      a b c d e f g h\n\n");
-    printf("      Bitboard: %lu \n\n", bitboard);
+
+    // Print the board with pieces
+    std::cout << "\n   a b c d e f g h\n\n";
+    for (int row = 0; row < 8; row++) {
+        std::cout << 8 - row << "  ";
+        for (int col = 0; col < 8; col++) {
+            std::cout << pieces[row][col] << ' ';
+        }
+        std::cout << "\n";
+    }
+    std::cout << std::endl;
 }
 
-void fenToBitboards(const std::string fen, Bitboard* bitboards) {
+void fenToBitboards(const std::string fen, Bitboard* bitboards,
+                    Color* currentPlayerColor) {
     // Reset bitboards
-    for (int i = 0; i < 18; ++i) {
+    for (int i = 0; i < 20; ++i) {
         bitboards[i] = 0ULL;
     }
-
-    bool parsingCastlingRights = false;
 
     // Parse FEN string
     size_t index = 0;
     size_t rank = 0, file = 0;
+    int parsingStage = 0;
+
     for (char c : fen) {
         if (c == '/') {
             rank++;
@@ -52,8 +117,9 @@ void fenToBitboards(const std::string fen, Bitboard* bitboards) {
             file += (c - '0');
         } else {
             int square = rank * 8 + file;
-            if (!parsingCastlingRights) {
+            if (parsingStage == 0) {
                 switch (c) {
+                    // Parsing piece placements
                     case 'P':
                         setBit(bitboards[WHITE_PAWNS], square);
                         setBit(bitboards[WHITE_PIECES], square);
@@ -115,32 +181,52 @@ void fenToBitboards(const std::string fen, Bitboard* bitboards) {
                         setBit(bitboards[OCCUPIED_SPACES], square);
                         break;
                     case ' ':
-                        parsingCastlingRights = true;
+                        parsingStage++;
+                        break;
+                    default:
+                        break;  // Ignore other characters
+                }
+                file++;
+            } else if (parsingStage == 1) {
+                switch (c) {
+                    case 'w':
+                        *currentPlayerColor = WHITE;
+                        break;
+                    case 'b':
+                        *currentPlayerColor = BLACK;
+                        break;
+                    case ' ':
+                        parsingStage++;
+                        break;
+                    defeault:
+                        break;
+                }
+            } else {
+                // Parsing castling rights
+                switch (c) {
+                    case 'K':
+                        setBit(bitboards[CASTLING_RIGHTS],
+                               0);  // White kingside castle
+                        break;
+                    case 'Q':
+                        setBit(bitboards[CASTLING_RIGHTS],
+                               1);  // White queenside castle
+                        break;
+                    case 'k':
+                        setBit(bitboards[CASTLING_RIGHTS],
+                               2);  // Black kingside castle
+                        break;
+                    case 'q':
+                        setBit(bitboards[CASTLING_RIGHTS],
+                               3);  // Black queenside castle
+                        break;
                     default:
                         break;  // Ignore other characters
                 }
             }
-            file++;
-        }
-        if (parsingCastlingRights) {
-            switch (c) {
-                case 'K':
-                    setBit(bitboards[CASTLING_RIGHTS], h1);
-                    break;
-                case 'Q':
-                    setBit(bitboards[CASTLING_RIGHTS], a1);
-                    break;
-                case 'k':
-                    setBit(bitboards[CASTLING_RIGHTS], h8);
-                    break;
-                case 'q':
-                    setBit(bitboards[CASTLING_RIGHTS], a8);
-                    break;
-                default:
-                    break;  // Ignore other characters
-            }
         }
     }
+
+    // Set bitboards for empty spaces and pieces
     bitboards[EMPTY_SPACES] = ~bitboards[OCCUPIED_SPACES];
 }
-
