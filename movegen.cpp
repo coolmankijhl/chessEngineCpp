@@ -89,20 +89,22 @@ void rookMoves(Index square, Color color, Bitboard *board) {
     for (int i = 0; i < 4; i++) {     // iterate through posChange array
         for (int j = 1; j < 8; j++) { // generate possible moves in current direction determined by posChange
             int targetSquare = square + posChange[i] * j;
-            // if target square is an ally or current piece is on a border column and moving into it break
-            if (getBit(board[allyPieceBoard], targetSquare) || (square % 8 == 0 && posChange[i] == -1) || (square % 8 == 7 && posChange[i] == 1)) {
-                break;
-                // if hit column border break
-            } else if (targetSquare % 8 == 0 || targetSquare % 8 == 7) {
-                setBit(rookMoves, targetSquare);
-                break;
-                // if target square is an enemy set as a possible move then break
-            } else if (getBit(board[enemyPieceBoard], targetSquare) != 0) {
-                setBit(rookMoves, targetSquare);
-                break;
-                // if in bounds then store as available move then continue looping
-            } else if (targetSquare > -1 && targetSquare < 64) {
-                setBit(rookMoves, targetSquare);
+            if (targetSquare > -1 && targetSquare < 64) {
+                // if target square is an ally or current piece is on a border column and moving into it break
+                if (getBit(board[allyPieceBoard], targetSquare) || (square % 8 == 0 && posChange[i] == -1) || (square % 8 == 7 && posChange[i] == 1)) {
+                    break;
+                    // if hit column border break
+                } else if (targetSquare % 8 == 0 || targetSquare % 8 == 7) {
+                    setBit(rookMoves, targetSquare);
+                    break;
+                    // if target square is an enemy set as a possible move then break
+                } else if (getBit(board[enemyPieceBoard], targetSquare) != 0) {
+                    setBit(rookMoves, targetSquare);
+                    break;
+                    // if in bounds then store as available move then continue looping
+                } else {
+                    setBit(rookMoves, targetSquare);
+                }
             }
         }
     }
@@ -132,19 +134,125 @@ void bishopMoves(Index square, Color color, Bitboard *board) {
     for (int i = 0; i < 4; i++) {     // iterate through posChange array
         for (int j = 1; j < 8; j++) { // iterate through possible moves in a given direction determined by posChange
             int targetSquare = square + posChange[i] * j;
-            // if target square is an ally piece or current piece is on border column and moving into border then break
-            if (getBit(board[allyPieceBoard], targetSquare) || (square % 8 == 0 && (posChange[i] == -9 || posChange[i] == 7)) ||
-                (square % 8 == 7 && (posChange[i] == -7 || posChange[i] == 9))) {
-                break;
-                // if target square is an enemy piece, store as possible move then break
-            } else if (getBit(board[enemyPieceBoard], targetSquare) != 0) {
-                setBit(bishopMoves, targetSquare);
-                break;
-                // if in bounds then store as available move then continue looping
-            } else if (targetSquare > -1 && targetSquare < 64) {
-                setBit(bishopMoves, targetSquare);
+            // if in bounds
+            if (targetSquare > -1 && targetSquare < 64) {
+                // if target square is an ally piece or current piece is on border column and moving into border then break
+                if (getBit(board[allyPieceBoard], targetSquare) || (square % 8 == 0 && (posChange[i] == -9 || posChange[i] == 7)) ||
+                    (square % 8 == 7 && (posChange[i] == -7 || posChange[i] == 9))) {
+                    break;
+                    // if target square is an enemy piece, store as possible move then break
+                } else if (getBit(board[enemyPieceBoard], targetSquare) != 0) {
+                    setBit(bishopMoves, targetSquare);
+                    break;
+                } else {
+                    setBit(bishopMoves, targetSquare);
+                }
             }
         }
     }
     printBitboard(bishopMoves);
 }
+
+// Generates possible moves for a queen at a given postition 'square'
+void queenMoves(Index square, Color color, Bitboard *board) {
+
+    // INIT BOARD TO STORE POSSIBLE MOVES
+    Bitboard queenMoves = EMPTY_BITBOARD;
+
+    // POSSIBLE CHANGES IN POSITION FOR A QUEEN
+    int posChangeRook[] = {8, -8, 1, -1};
+    int posChangeBishop[] = {7, 9, -7, -9};
+
+    // HANDLES ALLY AND ENEMY BOARD DEFINITIONS
+    int allyPieceBoard, enemyPieceBoard;
+    if (color == WHITE) {
+        allyPieceBoard = WHITE_PIECES;
+        enemyPieceBoard = BLACK_PIECES;
+    } else {
+        allyPieceBoard = BLACK_PIECES;
+        enemyPieceBoard = WHITE_PIECES;
+    }
+
+    // GENERATES POSSIBLE MOVES FOR ROOK MOVEMENT
+    for (int i = 0; i < 4; i++) {     // iterate through posChangeRook array
+        for (int j = 1; j < 8; j++) { // generate possible moves in current direction determined by posChangeRook
+            int targetSquare = square + posChangeRook[i] * j;
+            // if in bounds
+            if (targetSquare > -1 && targetSquare < 64) {
+                // if target square is an ally or current piece is on a border column and moving into it break
+                if (getBit(board[allyPieceBoard], targetSquare) || (square % 8 == 0 && posChangeRook[i] == -1) || (square % 8 == 7 && posChangeRook[i] == 1)) {
+                    break;
+                    // if hit column border break
+                } else if (targetSquare % 8 == 0 || targetSquare % 8 == 7) {
+                    setBit(queenMoves, targetSquare);
+                    break;
+                    // if target square is an enemy set as a possible move then break
+                } else if (getBit(board[enemyPieceBoard], targetSquare) != 0) {
+                    setBit(queenMoves, targetSquare);
+                    break;
+                } else {
+                    setBit(queenMoves, targetSquare);
+                }
+            }
+        }
+    }
+
+    // GENERATES POSSIBLE MOVES FOR BISHOP MOVEMENT
+    for (int i = 0; i < 4; i++) {     // iterate through posChangeBishop array
+        for (int j = 1; j < 8; j++) { // iterate through possible moves in a given direction determined by posChangeBishop
+            int targetSquare = square + posChangeBishop[i] * j;
+            // if in bounds
+            if (targetSquare > -1 && targetSquare < 64) {
+                // if target square is an ally piece or current piece is on border column and moving into border then break
+                if (getBit(board[allyPieceBoard], targetSquare) || (square % 8 == 0 && (posChangeBishop[i] == -9 || posChangeBishop[i] == 7)) ||
+                    (square % 8 == 7 && (posChangeBishop[i] == -7 || posChangeBishop[i] == 9))) {
+                    break;
+                    // if target square is an enemy piece, store as possible move then break
+                } else if (getBit(board[enemyPieceBoard], targetSquare) != 0) {
+                    setBit(queenMoves, targetSquare);
+                    break;
+                    // if in bounds then store as available move then continue looping
+                } else {
+                    setBit(queenMoves, targetSquare);
+                }
+            }
+        }
+    }
+    printBitboard(queenMoves);
+}
+
+void kingMoves(Index square, Color color, Bitboard *board) {
+
+    // INIT BOARD TO STORE POSSIBLE MOVES
+    Bitboard kingMoves = EMPTY_BITBOARD;
+
+    // POSSIBLE CHANGES IN POSITION FOR A KING
+    int posChange[] = {8, -8, 1, -1, 7, 9, -7, -9};
+
+    // HANDLES ALLY AND ENEMY BOARD DEFINITIONS
+    int allyPieceBoard, enemyPieceBoard;
+    if (color == WHITE) {
+        allyPieceBoard = WHITE_PIECES;
+        enemyPieceBoard = BLACK_PIECES;
+    } else {
+        allyPieceBoard = BLACK_PIECES;
+        enemyPieceBoard = WHITE_PIECES;
+    }
+
+    // GENERATES POSSIBLE MOVES
+    for (int i = 0; i < 8; i++) { // iterate through posChange array
+        int targetSquare = square + posChange[i];
+
+        // Check if target square is within bounds and doesn't cross board boundaries when wrapping around
+        if (targetSquare >= 0 && targetSquare < 64 && !(square % 8 == 0 && (posChange[i] == -1 || posChange[i] == -9 || posChange[i] == 7)) &&
+            !(square % 8 == 7 && (posChange[i] == 1 || posChange[i] == -7 || posChange[i] == 9))) {
+            // Check if target square is not occupied by an ally piece
+            if (!getBit(board[allyPieceBoard], targetSquare)) {
+                // If target square is empty or occupied by an enemy piece, it's a possible move
+                setBit(kingMoves, targetSquare);
+            }
+        }
+    }
+    printBitboard(kingMoves);
+}
+

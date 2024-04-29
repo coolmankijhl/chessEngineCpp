@@ -31,7 +31,7 @@ int main() {
     fenToBitboards(startingPosition, board, &currentPlayerColor);
 
     // printBitboard(board[BLACK_PIECES]);
-    bishopMoves(a4, WHITE, board);
+    kingMoves(h8, WHITE, board);
     // printBoard(board);
     // printBitboards(board);
 }
