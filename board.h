@@ -16,9 +16,9 @@
 #define setBit(bitboard, square) (bitboard |= (1ULL << square))
 #define popBit(bitboard, square) (getBit(bitboard, square) ? bitboard ^= (1ULL << square) : 0)
 
-extern std::map<std::string, Index> stringToIndexMap;
 void printBoard(Bitboard *bitboard);
 void printBitboard(Bitboard bitboard);
+int getPieceType(char piece);
 void fenToBitboards(const std::string fen, Bitboard *bitboards, Color *CurrentPlayerColor);
 
 #endif

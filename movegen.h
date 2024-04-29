@@ -8,5 +8,7 @@
 
 void pawnMoves(Index square, Color color, Bitboard *board);
 void knightMoves(Index square, Color color, Bitboard *board);
+void rookMoves(Index square, Color color, Bitboard *board);
+void bishopMoves(Index square, Color color, Bitboard *board);
 
 #endif
